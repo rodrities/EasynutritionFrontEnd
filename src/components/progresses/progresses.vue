@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
-      Schedules
+      Progresses
       <v-spacer></v-spacer>
       <v-text-field
           v-model="search"
@@ -12,8 +12,8 @@
       ></v-text-field>
     </v-card-title>
     <v-card-text>
-      <v-data-table :headers="headers" :items="displaySchedules" :items-per-page="5" :search="search"
-                    class="elevation-1" ref="schedulesTable">
+      <v-data-table :headers="headers" :items="displayProgresses" :items-per-page="5" :search="search"
+                    class="elevation-1" ref="progressesTable">
         <template v-slot:[`item.actions`]="{ item }">
           <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
           <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
@@ -34,16 +34,10 @@
                       <v-text-field v-model="editedItem.id" label="Id"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.startAt" label="StartAt"></v-text-field>
+                      <v-text-field v-model="editedItem.description" label="Description"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.endAt" label="EndAt"></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.state" label="State"></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.user" label="User"></v-text-field>
+                      <v-text-field v-model="editedItem.sessionId" label="SessionId"></v-text-field>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -73,10 +67,10 @@
 </template>
 
 <script>
-import ScheduleService from '../../services/schedules-service';
+import ProgressService from '../../services/progresses-service';
 
 export default {
-  name: "schedules",
+  name: "progresses",
   data() {
     return {
       search: '',
@@ -84,14 +78,12 @@ export default {
       dialogDelete: false,
       headers: [
         {text: 'Id', value: 'id'},
-        {text: 'StartAt', value: 'startAt'},
-        {text: 'EndAt', value: 'endAt'},
-        {text: 'State', value: "state" },
-        {text: 'User', value: 'user'},
+        {text: 'Description', value: 'description'},
+        {text: 'Session', value: 'Session'},
         {text: 'Actions', value: 'actions', sortable: false}
       ],
-      schedules: [],
-      displaySchedules: [],
+      progresses: [],
+      displayProgresses: [],
       editedIndex: -1,
       editedItem: {
         id: 0,
@@ -105,7 +97,7 @@ export default {
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'New Schedule' : 'Edit Schedule'
+      return this.editedIndex === -1 ? 'New Progress' : 'Edit Progress'
     },
   },
 
@@ -118,33 +110,30 @@ export default {
     },
   },
   methods: {
-    retrieveSchedules() {
-      ScheduleService.getAll()
+    retrieveProgresses() {
+      ProgressService.getAll()
           .then(response => {
-            this.schedules = response.data;
-            this.displaySchedules = response.data.map(this.getDisplaySchedule);
+            this.progresses = response.data;
+            this.displayProgresses = response.data.map(this.getDisplayProgress);
           })
           .catch((e) => {
             console.log(e);
           });
     },
 
-    getDisplaySchedule(schedule) {
+    getDisplayProgress(progress) {
       return {
-        id: schedule.id,
-        startAt: schedule.startAt,
-        endAt: schedule.endAt,
-        state: schedule.state,
-        user: schedule.user.username
+        id: progress.id,
+        description: progress.description,
       };
     },
 
     refreshList() {
-      this.retrieveSchedules();
+      this.retrieveProgresses();
     },
 
-    removeAllSchedules() {
-      ScheduleService.deleteAll()
+    removeAllProgresses() {
+      ProgressService.deleteAll()
           .then(() => {
             this.refreshList();
           })
@@ -155,21 +144,21 @@ export default {
     },
 
     editItem(item) {
-      this.editedIndex = this.displaySchedules.indexOf(item);
+      this.editedIndex = this.displayProgresses.indexOf(item);
       console.log(item);
-      this.editedItem = this.schedules[this.editedIndex];
+      this.editedItem = this.progresses[this.editedIndex];
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.displaySchedules.indexOf(item);
-      this.editedItem = Object.assign({}, this.schedules[this.editedIndex]);
+      this.editedIndex = this.displayProgresses.indexOf(item);
+      this.editedItem = Object.assign({}, this.progresses[this.editedIndex]);
       this.dialogDelete = true;
     },
 
     deleteItemConfirm() {
-      this.deleteSchedule(this.editedItem.id);
-      this.schedules.splice(this.editedIndex, 1);
+      this.deleteProgress(this.editedItem.id);
+      this.progresses.splice(this.editedIndex, 1);
       this.closeDelete();
     },
 
@@ -191,9 +180,9 @@ export default {
 
     save() {
       if (this.editedIndex > -1) {
-        this.schedules[this.editedIndex] = this.editedItem;
-        this.displaySchedules[this.editedIndex] = this.getDisplaySchedule(this.schedules[this.editedIndex]);
-        ScheduleService.update(this.editedItem.id, this.editedItem)
+        this.progresses[this.editedIndex] = this.editedItem;
+        this.displayProgresses[this.editedIndex] = this.getDisplayProgress(this.progresses[this.editedIndex]);
+        ProgressService.update(this.editedItem.id, this.editedItem)
             .then(() => {
               this.refreshList();
             })
@@ -202,11 +191,11 @@ export default {
             });
 
       } else {
-        ScheduleService.create(this.editedItem)
+        ProgressService.create(this.editedItem)
             .then(response => {
               let item = response.data;
-              this.schedules.push(item);
-              this.displaySchedules.push(this.getDisplaySchedule(item));
+              this.progresses.push(item);
+              this.displayProgresses.push(this.getDisplayProgress(item));
             })
             .catch(e => {
               console.log(e);
@@ -215,8 +204,8 @@ export default {
       this.close()
     },
 
-    deleteSchedule(id) {
-      ScheduleService.delete(id)
+    deleteProgress(id) {
+      ProgressService.delete(id)
           .then(() => {
             this.refreshList();
           })
@@ -225,15 +214,15 @@ export default {
           });
     },
 
-    navigateToAddSchedule() {
-      this.$router.push({name: 'add-schedule'});
+    navigateToAddProgress() {
+      this.$router.push({name: 'add-progress'});
     },
-    navigateToEditSchedule(id) {
-      this.$router.push({name: 'edit-schedule', params: { id: id}});
+    navigateToEditProgress(id) {
+      this.$router.push({name: 'edit-progress', params: { id: id}});
     }
   },
   mounted() {
-    this.retrieveSchedules();
+    this.retrieveProgresses();
   }
 
 }

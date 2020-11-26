@@ -11,6 +11,11 @@ const routes = [
         component: Home
     },
     {
+        path: '/home2',
+        name: 'Home2',
+        component: () => import(/* webpackChunkName: "login" */ '../views/home2.vue')
+    },
+    {
         path: '/login',
         name: 'Login',
         component: () => import(/* webpackChunkName: "login" */ '../views/login.vue')
@@ -155,6 +160,22 @@ const routes = [
         path: '/experiences/:id',
         name: 'edit-experience',
         component: () => import('../components/experiences/edit-experience')
+    },
+
+    {
+        path: '/progresses',
+        name: 'progresses',
+        component: () => import('../components/progresses/progresses')
+    },
+    {
+        path: '/progresses/new',
+        name: 'add-progress',
+        component: () => import('../components/progresses/add-progress')
+    },
+    {
+        path: '/progresses/:id',
+        name: 'edit-progress',
+        component: () => import('../components/progresses/edit-progress')
     }
 
 ]

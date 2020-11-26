@@ -7,6 +7,7 @@
         <v-btn text to="/roles">Roles</v-btn>
         <v-btn text to="/users">Users</v-btn>
         <v-btn text to="/subscriptions">Subscriptions</v-btn>
+        <v-btn text to="/progresses">Progresses</v-btn>
         <v-btn text to="/schedules">Schedules</v-btn>
         <v-btn text to="/experiences">Experiences</v-btn>
         <v-btn text to="/complaints">Complaints</v-btn>
